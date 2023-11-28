@@ -134,6 +134,7 @@ class Session:
         ]
         prompt = self.prompts[-1]
         enhanced_prompt = add_message(self.client, self.thread, prompt)
+        print(f"{prompt=}\n{enhanced_prompt=}")
         response = self.client.images.generate(
             model=self.model,
             prompt=enhanced_prompt,
@@ -155,7 +156,7 @@ class Session:
         self.prompts += [kwargs.get("prompt")]
         prompt = ", ".join(self.prompts).replace(Session.PROMPT_HEADER, "")
         enhanced_prompt = add_message(self.client, self.thread, prompt)
-        print(f'Prompts = {", ".join(self.prompts)}')
+        print(f"{prompt=}\n{enhanced_prompt=}")
         response = self.client.images.edit(
             # model=self.model,
             image=open(prev_img_path, "rb"),
@@ -181,6 +182,7 @@ class Session:
         self.prompts += [kwargs.get("prompt")]
         prompt = ", ".join(self.prompts).replace(Session.PROMPT_HEADER, "")
         enhanced_prompt = add_message(self.client, self.thread, prompt)
+        print(f"{prompt=}\n{enhanced_prompt=}")
         result = self.inpaint_pipeline(
             prompt=enhanced_prompt,
             image=prev_img,
