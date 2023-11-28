@@ -163,3 +163,4 @@ class Session:
             generator=self.generator,
         ).images[0]
         result.save(self.img_path)
+        return self.img_path
