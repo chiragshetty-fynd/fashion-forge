@@ -145,10 +145,10 @@ class Session:
 
     def inpaint(self, **kwargs):
         mask = load_image(self.sd_mask_path).resize(
-            Session.IMG_WIDTH, Session.IMG_HEIGHT
+            (Session.IMG_WIDTH, Session.IMG_HEIGHT)
         )
         prev_img = load_image(self.img_path).resize(
-            Session.IMG_WIDTH, Session.IMG_HEIGHT
+            (Session.IMG_WIDTH, Session.IMG_HEIGHT)
         )
         self.prompts += [kwargs.get("prompt")]
         result = self.inpaint_pipeline(
