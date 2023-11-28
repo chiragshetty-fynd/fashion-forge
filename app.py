@@ -118,9 +118,12 @@ print(f"{st.session_state.kwargs.keys()=}")
 print(f"{modify_generated=} {('canvas_results' in st.session_state.kwargs)=}")
 if modify_generated and ("canvas_results" in st.session_state.kwargs):
     with st.spinner("Modifying..."):
-        st.session_state.image = st.session_state.session.generate(
+        st.session_state.image = st.session_state.session.inpaint(
             **st.session_state.kwargs
         )
+        # st.session_state.image = st.session_state.session.generate(
+        #     **st.session_state.kwargs
+        # )
 
 
 # if __name__ == "__main__":
