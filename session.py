@@ -31,7 +31,7 @@ def start_new_chat(client):
 
 def get_messages_in_chat(client, thread):
     messages = client.beta.threads.messages.list(thread_id=thread.id)
-    return messages[-1]
+    return messages[0].content[0].text.value
 
 
 def add_message(client, thread, content):
