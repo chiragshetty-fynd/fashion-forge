@@ -11,6 +11,7 @@ from inpaint import pipeline, generator
 
 
 KEY_FILE = ".key"
+ASST_ID = "asst_zOpsQCniEVnYWWK75xXJfWFT"
 
 with open(KEY_FILE, "r") as f:
     config = json.load(f)
@@ -19,6 +20,22 @@ print("Loading Keys")
 OPEN_AI_API_KEY = config["key"]
 OPEN_AI_ORG_ID = config["organizationId"]
 
+
+def get_assistant(client, asst_id=ASST_ID):
+    assistant = client.beta.assistants.retrieve(asst_id)
+    return assistant
+
+def start_new_chat(client):
+    empty_thread = client.beta.threads.create()
+    return empty_thread
+
+def add_message(client, thread, content):
+    thread_message = client.beta.threads.messages.create(
+        thread_id = thread.id,
+        role="user",
+        content=content,
+    )
+    return thread_message
 
 def inverse(mask):
     mask[mask == 255] = 128
@@ -53,6 +70,7 @@ class Session:
         self.generator = generator
         self.inpaint_pipeline = pipeline
         self.client = OpenAI(organization=org_id, api_key=api_key)
+        self.prompt_enhancer = get_assistant(self.client)
 
     @property
     def img_path(self):
@@ -103,6 +121,10 @@ class Session:
         )
 
     def generate_first(self, **kwargs):
+
+        ## Start new thread with assistant on first prompt
+        self.thread = start_new_chat(self.client)
+
         properties = kwargs.get("properties", dict())
         gender = kwargs.get("gender", "male")
         clothing_type = kwargs.get("clothing_type", "t-shirts")
@@ -110,9 +132,11 @@ class Session:
             Session.PROMPT_HEADER
             + Session.properties_2_prompt(clothing_type, gender, properties)
         ]
+        prompt = self.prompts[-1]
+        enhanced_prompt = add_message(self.client, self.thread, prompt)
         response = self.client.images.generate(
             model=self.model,
-            prompt=self.prompts[-1],
+            prompt=enhanced_prompt,
             size=f"{Session.IMG_HEIGHT}x{Session.IMG_WIDTH}",
             quality=self.quality,
             n=1,
@@ -129,12 +153,14 @@ class Session:
         mask_path = self.mask_path
         prev_img_path = self.img_path
         self.prompts += [kwargs.get("prompt")]
+        prompt = ", ".join(self.prompts).replace(Session.PROMPT_HEADER, "")
+        enhanced_prompt = add_message(self.client, self.thread, prompt)
         print(f'Prompts = {", ".join(self.prompts)}')
         response = self.client.images.edit(
             # model=self.model,
             image=open(prev_img_path, "rb"),
             mask=open(mask_path, "rb"),
-            prompt=", ".join(self.prompts).replace(Session.PROMPT_HEADER, ""),
+            prompt=enhanced_prompt,
             n=1,
         )
         io.imsave(
@@ -153,8 +179,10 @@ class Session:
             (Session.IMG_WIDTH, Session.IMG_HEIGHT)
         )
         self.prompts += [kwargs.get("prompt")]
+        prompt = ", ".join(self.prompts).replace(Session.PROMPT_HEADER, "")
+        enhanced_prompt = add_message(self.client, self.thread, prompt)
         result = self.inpaint_pipeline(
-            prompt=", ".join(self.prompts).replace(Session.PROMPT_HEADER, ""),
+            prompt=enhanced_prompt,
             image=prev_img,
             mask_image=mask,
             guidance_scale=8.0,
