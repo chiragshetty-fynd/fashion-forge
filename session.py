@@ -29,13 +29,18 @@ def start_new_chat(client):
     empty_thread = client.beta.threads.create()
     return empty_thread
 
+def get_messages_in_chat(client, thread):
+    messages = client.beta.threads.messages.list(thread_id=thread.id)
+    return messages[-1]
+
+
 def add_message(client, thread, content):
     thread_message = client.beta.threads.messages.create(
         thread_id = thread.id,
         role="user",
         content=content,
     )
-    return thread_message
+    return get_messages_in_chat(client, thread)
 
 def inverse(mask):
     mask[mask == 255] = 128
