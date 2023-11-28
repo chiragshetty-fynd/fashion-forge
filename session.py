@@ -144,6 +144,8 @@ class Session:
         return self.img_path
 
     def inpaint(self, **kwargs):
+        print("Modifying generated image!!")
+        self.mask_gen(kwargs["canvas_results"])
         mask = load_image(self.sd_mask_path).resize(
             (Session.IMG_WIDTH, Session.IMG_HEIGHT)
         )
