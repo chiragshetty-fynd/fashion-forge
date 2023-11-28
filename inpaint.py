@@ -2,7 +2,8 @@ import torch
 from diffusers import StableDiffusionXLInpaintPipeline
 
 pipeline = StableDiffusionXLInpaintPipeline.from_pretrained(
-    "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+    # "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+    "stabilityai/stable-diffusion-xl-base-1.0"
     torch_dtype=torch.float16,
     variant="fp16",
 ).to("cuda")
